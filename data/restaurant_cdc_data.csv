@@ -1,0 +1,51 @@
+﻿state_name,state_abb,fastFdPerMil,veganPerMil,vegetPerMil,vegetOptPerMil,totVegPerMil,obesityPerc,heartDisDthsPerMil
+Alabama,AL,630,1,1,41,43,36,2196
+Alaska,AK,260,0,3,152,154,31,1297
+Arizona,AZ,460,6,5,87,97,31,1340
+Arkansas,AR,470,1,2,40,43,37,2265
+California,CA,360,10,8,102,120,29,1369
+Colorado,CO,400,4,4,159,167,24,1277
+Connecticut,CT,240,5,6,75,86,29,1431
+Delaware,DE,410,4,4,101,109,34,1543
+Florida,FL,330,7,4,92,104,27,1401
+Georgia,GA,490,5,4,64,72,33,1755
+Hawaii,HI,320,18,30,208,256,25,1203
+Idaho,ID,380,1,2,90,93,30,1507
+Illinois,IL,450,4,4,69,78,32,1620
+Indiana,IN,500,2,1,64,67,35,1788
+Iowa,IA,470,2,3,56,61,34,1729
+Kansas,KS,470,1,1,52,54,25,1660
+Kentucky,KY,480,1,3,37,42,37,1964
+Louisiana,LA,440,3,0,42,46,36,2078
+Maine,ME,310,3,7,174,184,32,1424
+Maryland,MD,390,5,3,92,101,32,1593
+Massachusetts,MA,310,7,10,121,138,25,1272
+Michigan,MI,400,3,4,72,79,36,1938
+Minnesota,MN,370,3,1,93,97,30,1167
+Mississippi,MS,210,1,1,23,24,41,2267
+Missouri,MO,490,3,2,57,62,35,1870
+Montana,MT,380,2,2,98,102,28,1571
+Nebraska,NE,540,3,1,40,43,34,1449
+Nevada,NV,470,11,2,109,122,31,1981
+New Hampshire,NH,320,3,5,144,152,32,1434
+New Jersey,NJ,200,9,9,73,90,26,1580
+New Mexico,NM,430,1,4,75,80,32,1582
+New York,NY,210,10,9,96,116,27,1666
+North Carolina,NC,450,3,3,76,82,34,1547
+North Dakota,ND,360,0,3,52,55,35,1477
+Ohio,OH,470,4,3,80,87,35,1888
+Oklahoma,OK,530,1,2,34,37,37,2314
+Oregon,OR,360,17,10,152,179,29,1310
+Pennsylvania,PA,320,6,3,76,84,33,1729
+Rhode Island,RI,250,9,6,93,108,30,1593
+South Carolina,SC,490,2,3,57,61,35,1640
+South Dakota,SD,430,1,0,67,68,33,1581
+Tennessee,TN,520,4,4,50,57,37,2028
+Texas,TX,430,3,4,50,57,34,1634
+Utah,UT,360,5,2,121,128,29,1465
+Vermont,VT,190,5,14,186,205,27,1516
+Virginia,VA,430,4,4,87,94,32,1491
+Washington,WA,310,6,6,107,119,28,1348
+West Virginia,WV,530,2,4,45,51,40,1974
+Wisconsin,WI,400,1,3,56,60,34,1588
+Wyoming,WY,410,0,2,85,86,30,1504
