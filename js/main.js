@@ -14,7 +14,8 @@ window.onload = setMap();
 function setMap(){
     
     //set map dimensions
-    var width = 1200, height = 600;    
+    var width = window.innerWidth * 0.5, 
+        height = 460;    
     
     //create SVG container block
     var container = d3.select("body") //get the <body> element from the DOM
@@ -50,7 +51,6 @@ function setMap(){
         console.log(restCDCdata);
         console.log(states);
 
-        
         //translate states TopoJson to GeoJson
         var usStates = topojson.feature(states, states.objects.states19).features;
         
@@ -70,7 +70,7 @@ function setMap(){
         setEnumerationUnits(usStates, container, path, colorScale);
 
         //add coordinated visualization to the map
-        //setChart(csvData, colorScale);
+        setChart(restCDCdata, colorScale);
     };
 
 };  //End of setMap()    
@@ -104,8 +104,9 @@ function joinData(usStates, restCDCdata){
     
     return usStates;
 }; //end joinData()
-    
 
+    
+//***NEED DIFFERENT/TOGGLE VIEW & SCALE WITH ALASKA & HAWAII
 //add enumeration units (states) to the map
 function setEnumerationUnits(usStates, container, path, colorScale){
     var stateGeog = container.selectAll(".stateGeog")
@@ -117,8 +118,8 @@ function setEnumerationUnits(usStates, container, path, colorScale){
         })
         .attr("d", path)
         .style("fill", function(d){
-            return colorScale(d.properties[expressed]);
-        });
+            return choropleth(d.properties, colorScale);
+        });       
 }; //end setEnumerationUnits()
 
     
@@ -168,15 +169,140 @@ function makeColorScale(data){
     return colorScale;    
 }; //end makeColorScale()
     
+
+//test for data value and return color (helps if there is some features in the dataset do not have values)
+function choropleth(props, colorScale){
+    //make sure attribute value is a number
+    var val = parseFloat(props[expressed]);
+    //if attribute value exists, assign a color; otherwise assign gray
+    if (typeof val == 'number' && !isNaN(val)){
+        return colorScale(val);
+    } else {
+        return "#CCC";
+    };
+}
+    
+//create coordinated bar chart
+function setChart(restCDCdata, colorScale){
+    //chart frame dimeentions
+    var chartWidth = window.innerWidth * 0.425,
+        chartHeight = 473,
+        leftPadding = 25,
+        rightPadding = 2,
+        topBottomPadding = 5,
+        chartInnerWidth = chartWidth - leftPadding - rightPadding,
+        chartInnerHeight = chartHeight - topBottomPadding * 2,
+        translate = "translate(" + leftPadding + "," + topBottomPadding + ")";        
+    
+    //create a second svg element to hold the bar chart
+    var chart = d3.select("body")
+    .append("svg")
+    .attr("width", chartWidth)
+    .attr("height", chartHeight)
+    .attr("class", "chart");
+    
+    //create a rectangle for chart background fill
+    var chartBackground = chart.append("rect")
+        .attr("class", "chartBackground")
+        .attr("width", chartInnerWidth)
+        .attr("height", chartInnerHeight)
+        .attr("transform", translate);    
     
     
+    //create a scale to size bars proportional to frame
+    var csvMax = d3.max(restCDCdata, function(d){
+        return parseFloat(d[expressed]);
+    });
+    var yScale = d3.scaleLinear()
+        //.range([0, chartHeight])
+        .range([chartHeight - 10, 0])    
+        .domain([0, csvMax + 20]);
+    
+    //set bars for each state
+    var bars = chart.selectAll(".bars")
+        .data(restCDCdata)
+        .enter()
+        .append("rect")
+        .sort(function(a, b){
+            return b[expressed]-a[expressed]
+        })
+        .attr("class", function(d){
+            return "bars " + d.STUSPS;
+        })
+        .attr("width", chartInnerWidth / restCDCdata.length - 1)
+        .attr("x", function(d, i){
+            return i * (chartInnerWidth / restCDCdata.length) + leftPadding;
+        })
+        .attr("height", function(d, i){
+            return chartHeight - 10 - yScale(parseFloat(d[expressed]));
+        })
+        .attr("y", function(d, i){
+            return yScale(parseFloat(d[expressed])) + topBottomPadding;
+        })  
+        .style("fill", function(d){
+            return choropleth(d, colorScale);
+        });   
+    
+    //annotate bars with attribute value text (state abbreviations)
+//UPDATE THIS TO ANGLE STATE ABBREVIATIONS & PLACE ABOVE EACH BAR
+    var abbr = chart.selectAll(".abbr")
+        .data(restCDCdata)
+        .enter()
+        .append("text")
+        .sort(function(a, b){
+            return b[expressed]-a[expressed]
+        })
+        .attr("class", function(d){
+            return "abbr " + d.STUSPS;
+        })
+//***ADD OR AMEND ATTRIBUTE TO ANGLE TEXT
+        .attr("text-anchor", "middle")
+        .attr("x", function(d, i){
+            var fraction = (chartWidth / restCDCdata.length);
+            return i * fraction + (fraction -1) / 2;
+        })
+        .attr("y", function(d){
+            return chartHeight - yScale(parseFloat(d[expressed])) - 1;
+        })
+        .text(function(d){
+            return d.STUSPS; 
+        });
+
+    //create vertical axis generator
+    var yAxis = d3.axisLeft(yScale)
+        .scale(yScale);
+
+    //place axis
+    var axis = chart.append("g")
+        .attr("class", "axis")
+        .attr("transform", translate)
+        .call(yAxis);
+    
+    //create frame for chart border
+    var chartFrame = chart.append("rect")
+        .attr("class", "chartFrame")
+        .attr("width", chartInnerWidth)
+        .attr("height", chartInnerHeight)
+        .attr("transform", translate);    
+    
+    //create a text element for the dynamic chart title
+//***NEED TO ADJUST VARIABLES TO MAKE DYNAMIC TITLE
+    var chartTitle = chart.append("text")
+        .attr("x", 40)
+        .attr("y", 40)
+        .attr("class", "chartTitle")
+        .text("Variable Name " + expressed[3] + " per million people in each state");  
+    
+
+    
+}; //end setChart()
     
     
     
 })(); //end anonymous wrapper function
 
 
-
+//!!! MISSISSIPPI DATA FOR FAST FOOD RESTAURANTS
 
 
 
