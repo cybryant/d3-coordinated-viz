@@ -1,6 +1,13 @@
-//Geog575 d3 lab March, 2021; Cherie Bryant//
+//Geog575 d3 lab April 11, 2021; Cherie Bryant//
 
-//execute script when window is loaded
+//wrap everything into a self-executing anonymous function to move attribute variables to local scope
+(function(){
+
+//pseudo-global attribute variables; create list to hold attributes
+var attrArray = ["fastFdPerMil", "veganPerMil", "vegetPerMil", "vegetOptPerMil", "totVegPerMil", "obesityPerc", "heartDisDthsPerMil"];
+var expressed = attrArray[0]; //initial attribute
+
+//execute script when window loads
 window.onload = setMap();
 
 //set up choropleth map
@@ -42,33 +49,25 @@ function setMap(){
         
         console.log(restCDCdata);
         console.log(states);
-        
-        //place graticule on the map
-        //PLACEHOLDER
+
         
         //translate states TopoJson to GeoJson
         var usStates = topojson.feature(states, states.objects.states19).features;
         
         console.log(usStates);
+                        
+        //place graticule on the map
+        //function setGraticule(container, path)
+        //PLACEHOLDER
         
-        //add US States to the map
-        var stateGeog = container.selectAll(".stateGeog")
-            .data(usStates)
-            .enter()
-            .append("path")
-            .attr("class", function(d){
-                return d.properties.STUSPS;
-            })
-            .attr("d", path);
-        
-        //join csv data to GeoJSON enumeration units
+        //join csv data to GeoJSON enumeration units (states)
         usStates = joinData(usStates, restCDCdata);
 
         //create the color scale
-        //var colorScale = makeColorScaleNatural(csvData);
+        var colorScale = makeColorScale(restCDCdata);
 
-        //add enumeration units to the map
-        //setEnumerationUnits(franceRegions, map, path, colorScale);
+        //add enumeration units (states) to the map
+        setEnumerationUnits(usStates, container, path, colorScale);
 
         //add coordinated visualization to the map
         //setChart(csvData, colorScale);
@@ -79,9 +78,6 @@ function setMap(){
 
 //join the attribute data to the spatial data
 function joinData(usStates, restCDCdata){
-    
-    //create list to hold attributes
-    var attrArray = ["fastFdPerMil", "veganPerMil", "vegetPerMil", "vegetOptPerMil", "totVegPerMil", "obesityPerc", "heartDisDthsPerMil"]; 
     
     //loop through csv data to assign each set of attribute values to geojson state
     for (var i=0; i<restCDCdata.length; i++){
@@ -108,6 +104,76 @@ function joinData(usStates, restCDCdata){
     
     return usStates;
 }; //end joinData()
+    
+
+//add enumeration units (states) to the map
+function setEnumerationUnits(usStates, container, path, colorScale){
+    var stateGeog = container.selectAll(".stateGeog")
+        .data(usStates)
+        .enter()
+        .append("path")
+        .attr("class", function(d){
+            return "stateGeog " + d.properties.STUSPS;
+        })
+        .attr("d", path)
+        .style("fill", function(d){
+            return colorScale(d.properties[expressed]);
+        });
+}; //end setEnumerationUnits()
+
+    
+//create color scale generator
+function makeColorScale(data){
+    //set color classes
+    var colorClasses =[
+        "#D4B9DA",
+        "#C994C7",
+        "#DF65B0",
+        "#DD1C77",
+        "#980043"        
+    ];
+    
+/*    //create color scale generator - NATURAL
+    var colorScale = d3.scaleThreshold()
+        .range(colorClasses);
+    //build array of all values of the expressed attribute
+    var domainArray = [];
+    for (var i=0; i<data.length; i++){
+        var val = parseFloat(data[i][expressed]);
+        domainArray.push(val);
+    };
+    //cluster data using ckmeans clustering algorith to create natural breaks
+    var clusters = ss.ckmeans(domainArray, 5);
+    //reset domain array to cluster minimums
+    domainArray = clusters.map(function(d){
+        return d3.min(d);
+    });
+    //remove first value from domain array to create class breakpoints
+    domainArray.shift();
+    //assign array of last 4 cluster minimums as domain
+    colorScale.domain(domainArray);
+*/
+    
+    //create color scale generator - QUANTILE
+    var colorScale = d3.scaleQuantile()
+        .range(colorClasses);
+    //build two-value array of minimum and maximum expressed attribute values
+    var minmax = [
+        d3.min(data, function(d) { return parseFloat(d[expressed]); }),
+        d3.max(data, function(d) { return parseFloat(d[expressed]); })
+    ];
+    //assign two-value array as scale domain
+    colorScale.domain(minmax);    
+
+    return colorScale;    
+}; //end makeColorScale()
+    
+    
+    
+    
+    
+    
+})(); //end anonymous wrapper function
 
 
 
