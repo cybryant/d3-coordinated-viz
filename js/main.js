@@ -7,6 +7,31 @@
 var attrArray = ["fastFdPerMil", "veganPerMil", "vegetPerMil", "vegetOptPerMil", "totVegPerMil", "obesityPerc", "heartDisDthsPerMil"];
 var expressed = attrArray[0]; //initial attribute
 
+//chart frame dimensions
+var chartWidth = window.innerWidth * 0.425,
+    chartHeight = 473,
+    leftPadding = 25,
+    rightPadding = 2,
+    topBottomPadding = 5,
+    chartInnerWidth = chartWidth - leftPadding - rightPadding,
+    chartInnerHeight = chartHeight - topBottomPadding * 2,
+    translate = "translate(" + leftPadding + "," + topBottomPadding + ")"; 
+
+    //YSCALE DEFINITION FROM SETCHART FUNCTION
+    //create a scale to size bars proportional to frame
+    //var csvMax = d3.max(restCDCdata, function(d){
+    //    return parseFloat(d[expressed]);
+    //});
+    //var yScale = d3.scaleLinear()
+        //.range([0, chartHeight])
+    //    .range([chartHeight - 10, 0])    
+    //    .domain([0, csvMax + 20]);  
+
+//create a scale to size bars proportional to frame and for axis    
+var yScale = d3.scaleLinear()
+    .range([463, 0]) //chart height minus 10   
+    .domain([0, 650]); //zero to maximum csv value (rounded)    
+    
 //execute script when window loads
 window.onload = setMap();
 
@@ -30,7 +55,7 @@ function setMap(){
         .center([-3.64, 38.15])
         .rotate([90.09, 0.00, 0])
         .parallels([34.05, 32.37])
-        .scale(400)
+        .scale(700)
         .translate([width / 2, height / 2]);
     
     var path = d3.geoPath()
@@ -71,6 +96,9 @@ function setMap(){
 
         //add coordinated visualization to the map
         setChart(restCDCdata, colorScale);
+        
+        //create dropdown menu
+        createDropdown(restCDCdata);
     };
 
 };  //End of setMap()    
@@ -154,6 +182,7 @@ function makeColorScale(data){
     //assign array of last 4 cluster minimums as domain
     colorScale.domain(domainArray);
 */
+ //***INVESTIGATE IF THIS IS THE BEST SCALE TO USE
     
     //create color scale generator - QUANTILE
     var colorScale = d3.scaleQuantile()
@@ -180,20 +209,10 @@ function choropleth(props, colorScale){
     } else {
         return "#CCC";
     };
-}
+}; //end choropleth()
     
 //create coordinated bar chart
 function setChart(restCDCdata, colorScale){
-    //chart frame dimeentions
-    var chartWidth = window.innerWidth * 0.425,
-        chartHeight = 473,
-        leftPadding = 25,
-        rightPadding = 2,
-        topBottomPadding = 5,
-        chartInnerWidth = chartWidth - leftPadding - rightPadding,
-        chartInnerHeight = chartHeight - topBottomPadding * 2,
-        translate = "translate(" + leftPadding + "," + topBottomPadding + ")";        
-    
     //create a second svg element to hold the bar chart
     var chart = d3.select("body")
     .append("svg")
@@ -208,15 +227,14 @@ function setChart(restCDCdata, colorScale){
         .attr("height", chartInnerHeight)
         .attr("transform", translate);    
     
-    
     //create a scale to size bars proportional to frame
-    var csvMax = d3.max(restCDCdata, function(d){
-        return parseFloat(d[expressed]);
-    });
-    var yScale = d3.scaleLinear()
-        //.range([0, chartHeight])
-        .range([chartHeight - 10, 0])    
-        .domain([0, csvMax + 20]);
+    //var csvMax = d3.max(restCDCdata, function(d){
+    //    return parseFloat(d[expressed]);
+    //});
+    //var yScale = d3.scaleLinear()
+    //    //.range([0, chartHeight])
+    //    .range([chartHeight - 10, 0])    
+    //    .domain([0, csvMax + 20]);
     
     //set bars for each state
     var bars = chart.selectAll(".bars")
@@ -229,7 +247,9 @@ function setChart(restCDCdata, colorScale){
         .attr("class", function(d){
             return "bars " + d.STUSPS;
         })
-        .attr("width", chartInnerWidth / restCDCdata.length - 1)
+        .attr("width", chartInnerWidth / restCDCdata.length - 1);
+    
+        /*   
         .attr("x", function(d, i){
             return i * (chartInnerWidth / restCDCdata.length) + leftPadding;
         })
@@ -241,10 +261,12 @@ function setChart(restCDCdata, colorScale){
         })  
         .style("fill", function(d){
             return choropleth(d, colorScale);
-        });   
+        });  
+        */    
+    
     
     //annotate bars with attribute value text (state abbreviations)
-//UPDATE THIS TO ANGLE STATE ABBREVIATIONS & PLACE ABOVE EACH BAR
+//UPDATE THIS TO ANGLE STATE ABBREVIATIONS
     var abbr = chart.selectAll(".abbr")
         .data(restCDCdata)
         .enter()
@@ -256,20 +278,24 @@ function setChart(restCDCdata, colorScale){
             return "abbr " + d.STUSPS;
         })
 //***ADD OR AMEND ATTRIBUTE TO ANGLE TEXT
-        .attr("text-anchor", "middle")
+        .attr("text-anchor", "middle");
+    
+        /*   
         .attr("x", function(d, i){
-            var fraction = (chartWidth / restCDCdata.length);
-            return i * fraction + (fraction -1) / 2;
-        })
-        .attr("y", function(d){
-            return chartHeight - yScale(parseFloat(d[expressed])) - 1;
+            var fraction = (chartInnerWidth / restCDCdata.length);
+            return (i * fraction + (fraction -1) / 2) + leftPadding;
+        })    
+    
+        .attr("y", function(d, i){
+            return (yScale(parseFloat(d[expressed])) + topBottomPadding) + 10;
         })
         .text(function(d){
             return d.STUSPS; 
         });
+        */    
 
     //create vertical axis generator
-    var yAxis = d3.axisLeft(yScale)
+    var yAxis = d3.axisLeft()
         .scale(yScale);
 
     //place axis
@@ -286,23 +312,127 @@ function setChart(restCDCdata, colorScale){
         .attr("transform", translate);    
     
     //create a text element for the dynamic chart title
-//***NEED TO ADJUST VARIABLES TO MAKE DYNAMIC TITLE
+//***NEED TO ADJUST VARIABLES TO MAKE SENSE
     var chartTitle = chart.append("text")
         .attr("x", 40)
         .attr("y", 40)
         .attr("class", "chartTitle")
-        .text("Variable Name " + expressed[3] + " per million people in each state");  
+        .text("Variable Name " + expressed + " per million people in each state");     
     
+    //set bar positions, heights, and colors
+    updateChart(bars, restCDCdata.length, colorScale);
 
-    
 }; //end setChart()
     
+    
+//***MOVE TO CORRECT LOCATION IN style.css    
+//create dropdown for attribute selection
+function createDropdown(restCDCdata){
+    //add select element
+    var dropdown = d3.select("body")
+        .append("select")
+        .attr("class", "dropdown")
+        .on("change", function(){
+            changeAttribute(this.value, restCDCdata)
+        });
+
+    //add initial option
+    var titleOption = dropdown.append("option")
+        .attr("class", "titleOption")
+        .attr("disabled", "true")
+        .text("Select Attribute");
+
+//***UPDATE TO MORE USEFUL NAMES    
+    //add attribute name options
+    var attrOptions = dropdown.selectAll("attrOptions")
+        .data(attrArray)
+        .enter()
+        .append("option")
+        .attr("value", function(d){ return d })
+        .text(function(d){ return d });
+}; //end createDropdown()
+
+    
+//dropdown change listener handler
+function changeAttribute(attribute, restCDCdata){
+    //change the expressed value
+    expressed = attribute;
+    
+    //recreate the colorscale
+    var colorScale = makeColorScale(restCDCdata);
+    
+    //recolor enumeration units
+    var stateGeog = d3.selectAll(".stateGeog")
+        .transition() //add animation
+        .duration(1000) //specify animation duration
+        .style("fill", function(d){
+            return choropleth(d.properties, colorScale)
+        });
+    
+    //re-sort, resize, and recolor bars
+    var bars = d3.selectAll(".bars")
+        //re-sort bars
+        .sort(function(a, b){
+            return b[expressed] - a[expressed];
+        })
+        .transition() //add animation
+        .delay(function(d, i){ 
+            return i * 20 //20 ms delay for each bar to make them appear to rearrange themselves
+        })
+        .duration(500) //gives each bar 1/2 second to rearrange itself
+    
+    //set bar positions, heights, and colors
+    updateChart(bars, restCDCdata.length, colorScale);    
+    
+    
+        /*
+        .attr("x", function(d, i){
+            return i * (chartInnerWidth / restCDCdata.length) + leftPadding;
+        })
+        //resize bars
+        .attr("height", function(d, i){
+            return 463 - yScale(parseFloat(d[expressed]));
+        })
+        .attr("y", function(d, i){
+            return yScale(parseFloat(d[expressed])) + topBottomPadding;
+        })
+        //recolor bars
+        .style("fill", function(d){
+            return choropleth(d, colorScale);
+        });
+        */
+}; //end changeAttributes()
+    
+
+//set position, size, and color bars in chart
+function updateChart(bars, n, colorScale){
+    //position bars
+    bars.attr("x", function(d, i){
+        return i * (chartInnerWidth / n) +leftPadding;
+    })
+        //size/resize bars
+        .attr("height", function(d, i) {
+            return 463 - yScale(parseFloat(d[expressed]));
+        })
+        .attr("y", function (d, i){
+            return yScale(parseFloat(d[expressed])) + topBottomPadding;
+    })
+        //color/recolor bars
+        .style("fill", function(d){
+            return choropleth(d, colorScale);
+    });
+    
+    var chartTitle = d3.select(".chartTitle")
+        .text("Number of Variable " + expressed + " in each region");
+    
+}; //end updateChart()
     
     
 })(); //end anonymous wrapper function
 
 
-//!!! MISSISSIPPI DATA FOR FAST FOOD RESTAURANTS
+//*** CHECK MISSISSIPPI DATA FOR FAST FOOD RESTAURANTS
+//***CHECK VEGAN VS VEGETARIAN DATA; OREGON SHOWING MORE VEGAN THAN VEGETARIAN
 
 
 
