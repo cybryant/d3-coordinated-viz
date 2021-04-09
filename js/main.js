@@ -17,16 +17,6 @@ var chartWidth = window.innerWidth * 0.425,
     chartInnerHeight = chartHeight - topBottomPadding * 2,
     translate = "translate(" + leftPadding + "," + topBottomPadding + ")"; 
 
-    //YSCALE DEFINITION FROM SETCHART FUNCTION
-    //create a scale to size bars proportional to frame
-    //var csvMax = d3.max(restCDCdata, function(d){
-    //    return parseFloat(d[expressed]);
-    //});
-    //var yScale = d3.scaleLinear()
-        //.range([0, chartHeight])
-    //    .range([chartHeight - 10, 0])    
-    //    .domain([0, csvMax + 20]);  
-
 //create a scale to size bars proportional to frame and for axis    
 var yScale = d3.scaleLinear()
     .range([463, 0]) //chart height minus 10   
@@ -73,13 +63,13 @@ function setMap(){
 		restCDCdata = data[0];
 		states = data[1];
         
-        console.log(restCDCdata);
-        console.log(states);
+        //console.log(restCDCdata);
+        //console.log(states);
 
         //translate states TopoJson to GeoJson
         var usStates = topojson.feature(states, states.objects.states19).features;
         
-        console.log(usStates);
+        //console.log(usStates);
                         
         //place graticule on the map
         //function setGraticule(container, path)
@@ -128,27 +118,9 @@ function joinData(usStates, restCDCdata){
             };
         };
     };
-    console.log(usStates);
-    
+    //console.log(usStates);
     return usStates;
 }; //end joinData()
-
-    
-//***NEED DIFFERENT/TOGGLE VIEW & SCALE WITH ALASKA & HAWAII
-//add enumeration units (states) to the map
-function setEnumerationUnits(usStates, container, path, colorScale){
-    var stateGeog = container.selectAll(".stateGeog")
-        .data(usStates)
-        .enter()
-        .append("path")
-        .attr("class", function(d){
-            return "stateGeog " + d.properties.STUSPS;
-        })
-        .attr("d", path)
-        .style("fill", function(d){
-            return choropleth(d.properties, colorScale);
-        });       
-}; //end setEnumerationUnits()
 
     
 //create color scale generator
@@ -210,6 +182,34 @@ function choropleth(props, colorScale){
         return "#CCC";
     };
 }; //end choropleth()
+
+//***NEED DIFFERENT/TOGGLE VIEW & SCALE WITH ALASKA & HAWAII
+//add enumeration units (states) to the map
+function setEnumerationUnits(usStates, container, path, colorScale){
+    var stateGeog = container.selectAll(".stateGeog")
+        .data(usStates)
+        .enter()
+        .append("path")
+        .attr("class", function(d){
+            return "stateGeog " + d.properties.STUSPS;
+        })
+        .attr("d", path)
+        .style("fill", function(d){
+            return choropleth(d.properties, colorScale)
+        })
+        .on("mouseover", function(d){
+            highlight(d.currentTarget.__data__.properties);
+        })
+        .on("mouseout", function(d){
+            dehighlight(d.currentTarget.__data__.properties);
+        })
+        .on("mousemove", moveLabel);
+
+    //add style descriptor for each path to be used by dehighlight()
+    var desc = stateGeog.append("desc")
+        .text('{"stroke": "#000", "stroke-width": "0.5px"}');
+}; //end setEnumerationUnits()  
+    
     
 //create coordinated bar chart
 function setChart(restCDCdata, colorScale){
@@ -227,17 +227,8 @@ function setChart(restCDCdata, colorScale){
         .attr("height", chartInnerHeight)
         .attr("transform", translate);    
     
-    //create a scale to size bars proportional to frame
-    //var csvMax = d3.max(restCDCdata, function(d){
-    //    return parseFloat(d[expressed]);
-    //});
-    //var yScale = d3.scaleLinear()
-    //    //.range([0, chartHeight])
-    //    .range([chartHeight - 10, 0])    
-    //    .domain([0, csvMax + 20]);
-    
     //set bars for each state
-    var bars = chart.selectAll(".bars")
+    var bars = chart.selectAll(".bar")
         .data(restCDCdata)
         .enter()
         .append("rect")
@@ -245,29 +236,26 @@ function setChart(restCDCdata, colorScale){
             return b[expressed]-a[expressed]
         })
         .attr("class", function(d){
-            return "bars " + d.STUSPS;
+            return "bar " + d.STUSPS;
         })
-        .attr("width", chartInnerWidth / restCDCdata.length - 1);
-    
-        /*   
-        .attr("x", function(d, i){
-            return i * (chartInnerWidth / restCDCdata.length) + leftPadding;
+        .attr("width", chartInnerWidth / restCDCdata.length - 1)
+        .on("mouseover", function(d){
+            highlight(d.currentTarget.__data__);
         })
-        .attr("height", function(d, i){
-            return chartHeight - 10 - yScale(parseFloat(d[expressed]));
+        .on("mouseout", function(d){
+            dehighlight(d.currentTarget.__data__);
         })
-        .attr("y", function(d, i){
-            return yScale(parseFloat(d[expressed])) + topBottomPadding;
-        })  
-        .style("fill", function(d){
-            return choropleth(d, colorScale);
-        });  
-        */    
-    
+        .on("mousemove", moveLabel);    
+        //.on("mouseover", highlight
+        //.on("mouseout", dehighlight);
+
+    //add style descriptor to each rectangle to be used by dehighlight()
+    var desc = bars.append("desc")
+        .text('{"stroke": "none", "stroke-width": "0px"}');
     
     //annotate bars with attribute value text (state abbreviations)
-//UPDATE THIS TO ANGLE STATE ABBREVIATIONS
-    var abbr = chart.selectAll(".abbr")
+    //***UPDATE THIS TO ANGLE STATE ABBREVIATIONS
+    /*var abbr = chart.selectAll(".abbr")
         .data(restCDCdata)
         .enter()
         .append("text")
@@ -277,32 +265,17 @@ function setChart(restCDCdata, colorScale){
         .attr("class", function(d){
             return "abbr " + d.STUSPS;
         })
-//***ADD OR AMEND ATTRIBUTE TO ANGLE TEXT
+        //***ADD OR AMEND ATTRIBUTE TO ANGLE TEXT
         .attr("text-anchor", "middle");
-    
-        /*   
-        .attr("x", function(d, i){
-            var fraction = (chartInnerWidth / restCDCdata.length);
-            return (i * fraction + (fraction -1) / 2) + leftPadding;
-        })    
-    
-        .attr("y", function(d, i){
-            return (yScale(parseFloat(d[expressed])) + topBottomPadding) + 10;
-        })
-        .text(function(d){
-            return d.STUSPS; 
-        });
-        */    
-
     //create vertical axis generator
     var yAxis = d3.axisLeft()
         .scale(yScale);
-
     //place axis
     var axis = chart.append("g")
         .attr("class", "axis")
         .attr("transform", translate)
         .call(yAxis);
+    */
     
     //create frame for chart border
     var chartFrame = chart.append("rect")
@@ -312,7 +285,7 @@ function setChart(restCDCdata, colorScale){
         .attr("transform", translate);    
     
     //create a text element for the dynamic chart title
-//***NEED TO ADJUST VARIABLES TO MAKE SENSE
+    //***NEED TO ADJUST VARIABLES TO MAKE SENSE
     var chartTitle = chart.append("text")
         .attr("x", 40)
         .attr("y", 40)
@@ -325,7 +298,7 @@ function setChart(restCDCdata, colorScale){
 }; //end setChart()
     
     
-//***MOVE TO CORRECT LOCATION IN style.css    
+//***MOVE TO CORRECT LOCATION ON THE MAP IN style.css    
 //create dropdown for attribute selection
 function createDropdown(restCDCdata){
     //add select element
@@ -342,7 +315,7 @@ function createDropdown(restCDCdata){
         .attr("disabled", "true")
         .text("Select Attribute");
 
-//***UPDATE TO MORE USEFUL NAMES    
+    //***UPDATE TO MORE USEFUL NAMES    
     //add attribute name options
     var attrOptions = dropdown.selectAll("attrOptions")
         .data(attrArray)
@@ -358,6 +331,26 @@ function changeAttribute(attribute, restCDCdata){
     //change the expressed value
     expressed = attribute;
     
+    //change yscale dynamically
+    csvmax = d3.max(restCDCdata, function(d) {
+        return parseFloat(d[expressed]);
+    });
+    yScale = d3.scaleLinear()
+        .range([chartHeight - 10, 0])
+        .domain(([0, csvmax]));
+    
+    //update vertical axis
+    d3.select(".axis").remove();
+    var yAxis = d3.axisLeft()
+        .scale(yScale);
+    
+    //place axis
+    var axis = d3.select(".chart")
+        .append("g")
+        .attr("class", "axis")
+        .attr("transform", translate)
+        .call(yAxis);
+    
     //recreate the colorscale
     var colorScale = makeColorScale(restCDCdata);
     
@@ -370,7 +363,7 @@ function changeAttribute(attribute, restCDCdata){
         });
     
     //re-sort, resize, and recolor bars
-    var bars = d3.selectAll(".bars")
+    var bars = d3.selectAll(".bar")
         //re-sort bars
         .sort(function(a, b){
             return b[expressed] - a[expressed];
@@ -383,24 +376,6 @@ function changeAttribute(attribute, restCDCdata){
     
     //set bar positions, heights, and colors
     updateChart(bars, restCDCdata.length, colorScale);    
-    
-    
-        /*
-        .attr("x", function(d, i){
-            return i * (chartInnerWidth / restCDCdata.length) + leftPadding;
-        })
-        //resize bars
-        .attr("height", function(d, i){
-            return 463 - yScale(parseFloat(d[expressed]));
-        })
-        .attr("y", function(d, i){
-            return yScale(parseFloat(d[expressed])) + topBottomPadding;
-        })
-        //recolor bars
-        .style("fill", function(d){
-            return choropleth(d, colorScale);
-        });
-        */
 }; //end changeAttributes()
     
 
@@ -426,15 +401,79 @@ function updateChart(bars, n, colorScale){
         .text("Number of Variable " + expressed + " in each region");
     
 }; //end updateChart()
+
     
+//highlight enumeration units and bars
+function highlight(props){
+    //change stroke
+    var selected = d3.selectAll("." + props.STUSPS)
+        .style("stroke", "blue")
+        .style("stroke-width", "2");
+    
+    setLabel(props);
+};
+    
+    
+//reset the element style on mouseout
+function dehighlight(props){
+    var selected = d3.selectAll("." + props.STUSPS)
+        .style("stroke", function(){
+            return getStyle(this, "stroke")
+        })
+        .style("stroke-width", function(){
+            return getStyle(this, "stroke-width")
+        });
+    
+    //remove info label
+    d3.select(".infolabel")
+        .remove();
+    
+    function getStyle(element, styleName){
+        var styleText = d3.select(element)
+            .select("desc")
+            .text();
+        
+        var styleObject = JSON.parse(styleText);
+        
+        return styleObject[styleName];
+    };
+}; //end dehighlight()
+    
+
+//create a dynamic label on mouseover
+function setLabel(props){
+    //label content
+    var labelAttribute = "<h1>" + props[expressed] + "</h1><b>" + expressed + "</b>";
+    
+    //create info label div
+    var infolabel = d3.select("body")
+        .append("div")
+        .attr("class", "infolabel")
+        .attr("id", props.STUSPS + "_label")
+        .html(labelAttribute);
+    
+    var stateName = infolabel.append("div")
+        .attr("class", "labelname")
+        .html(props.state_name);
+}; //end setLabel()
+    
+
+//function to move info label with mouse
+function moveLabel(){
+    //use coordinates of mousemove event to set label coordinates
+    var xPos = parseFloat(d3.select(this).attr("x")) +10,
+        yPos = parseFloat(d3.select(this).attr("y")) - 75;
+
+    d3.select(".infolabel")
+        .style("left", xPos + "px")
+        .style("top", yPos + "px");
+}; //end moveLabel()
     
 })(); //end anonymous wrapper function
 
 
-//*** CHECK MISSISSIPPI DATA FOR FAST FOOD RESTAURANTS
+//***CHECK MISSISSIPPI DATA FOR FAST FOOD RESTAURANTS
 //***CHECK VEGAN VS VEGETARIAN DATA; OREGON SHOWING MORE VEGAN THAN VEGETARIAN
-
-
 
 
 
