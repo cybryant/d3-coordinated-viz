@@ -123,11 +123,11 @@ function joinData(usStates, restCDCdata){
 function makeColorScale(data){
     //set color classes
     var colorClasses =[
-        "#D4B9DA",
-        "#C994C7",
-        "#DF65B0",
-        "#DD1C77",
-        "#980043"        
+        "#edf8fb",
+        "#b3cde3",
+        "#8c96c6",
+        "#8856a7",
+        "#810f7c"        
     ];
     
     //create color scale generator - QUANTILE
@@ -420,7 +420,7 @@ function moveLabel(event){
         y2 = event.clientY + 25;
     
     //horizontal label coordinate, testing for overflow
-    var y = event.clientY < 135 ? y2 : y1; //it appears "? y2 : y1" is shorthand for 'if/then'; if the statement before "?" is true then "y" value is y2, if the statement is false then "y" value is y1    
+    var y = event.clientY < 125 ? y2 : y1; //it appears "? y2 : y1" is shorthand for 'if/then'; if the statement before "?" is true then "y" value is y2, if the statement is false then "y" value is y1    
     var x = event.clientX > window.innerWidth - labelWidth - 20 ? x2 : x1;
     
     d3.select(".infolabel")
