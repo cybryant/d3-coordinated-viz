@@ -4,7 +4,10 @@
 (function(){
 
 //pseudo-global attribute variables; create list to hold attributes
-var attrArray = ["fastFdPerMil", "veganPerMil", "vegetPerMil", "vegetOptPerMil", "totVegPerMil", "obesityPerc", "heartDisDthsPerMil"];
+//var attrArray = ["fastFdPerMil", "veganPerMil", "vegetPerMil", "vegetOptPerMil", "totVegPerMil", "obesityPerc", "heartDisDthsPerMil"];
+
+var attrArray = ["Fast Food Restaurants per Million People", "Vegan Restaurants per Million People", "Vegetarian Restaurants per Million People", "Restaurants with Vegetarian Options per Million People", "Total Vegan/Vegetarian/Vegetarian Option Restaurants per Million People", "Percentage of Population that is Obese", "Heart Disease Deaths per Million People"];
+
 var expressed = attrArray[0]; //initial attribute
 
 //chart frame dimensions
@@ -30,7 +33,7 @@ function setMap(){
     
     //set map dimensions
     var width = window.innerWidth * 0.5, 
-        height = 460;    
+        height = 473;    
     
     //create SVG container block
     var container = d3.select("body") //get the <body> element from the DOM
@@ -41,11 +44,11 @@ function setMap(){
         .style("background-color", "rgba(0,0,0,0.2)"); 
     
     //create Albers equal area conic projection centered on the US
-	var projection = d3.geoAlbers()
-        .center([-3.64, 38.15])
-        .rotate([90.09, 0.00, 0])
-        .parallels([34.05, 32.37])
-        .scale(700)
+	var projection = d3.geoAlbersUsa()
+        //.center([-6, 40 ])
+        //.rotate([90.09, 0.00, 0])
+        //.parallels([34.05, 32.37])
+        .scale(850)
         .translate([width / 2, height / 2]);
     
     var path = d3.geoPath()
@@ -63,8 +66,8 @@ function setMap(){
 		restCDCdata = data[0];
 		states = data[1];
         
-        console.log(restCDCdata);
-        console.log(states);
+        //console.log(restCDCdata);
+        //console.log(states);
 
         //translate states TopoJson to GeoJson
         var usStates = topojson.feature(states, states.objects.states19).features;
@@ -279,12 +282,11 @@ function setChart(restCDCdata, colorScale){
         .attr("transform", translate);    
     
     //create a text element for the dynamic chart title
-    //***NEED TO ADJUST VARIABLES TO MAKE SENSE
     var chartTitle = chart.append("text")
         .attr("x", 60)
         .attr("y", 40)
         .attr("class", "chartTitle")
-        .text("Variable Name " + expressed + " per million people in each state");     
+        .text(expressed);     
     
     //set bar positions, heights, and colors
     updateChart(bars, restCDCdata.length, colorScale);
@@ -309,7 +311,6 @@ function createDropdown(restCDCdata){
         .attr("disabled", "true")
         .text("Select Attribute");
 
-    //***UPDATE TO MORE USEFUL NAMES    
     //add attribute name options
     var attrOptions = dropdown.selectAll("attrOptions")
         .data(attrArray)
@@ -331,7 +332,7 @@ function changeAttribute(attribute, restCDCdata){
     });
     yScale = d3.scaleLinear()
         .range([chartHeight - 10, 0])
-        .domain(([0, csvmax]));
+        .domain(([0, csvmax]));  //CHANGE UPPER ySCALE NUMBER HERE
     
     //update vertical axis
     d3.select(".axis").remove();
@@ -392,7 +393,7 @@ function updateChart(bars, n, colorScale){
     });
     
     var chartTitle = d3.select(".chartTitle")
-        .text("Number of Variable " + expressed + " in each region");
+        .text(expressed);
     
 }; //end updateChart()
 
@@ -448,7 +449,7 @@ function setLabel(props){
     
     var stateName = infolabel.append("div")
         .attr("class", "labelname")
-        .html(props.state_name);
+        .html(props.NAME);
 }; //end setLabel()
     
 

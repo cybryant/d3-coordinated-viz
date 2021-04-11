@@ -1,4 +1,4 @@
-﻿state_name,STUSPS,fastFdPerMil,veganPerMil,vegetPerMil,vegetOptPerMil,totVegPerMil,obesityPerc,heartDisDthsPerMil
+﻿NAME,STUSPS,Fast Food Restaurants per Million People,Vegan Restaurants per Million People,Vegetarian Restaurants per Million People,Restaurants with Vegetarian Options per Million People,Total Vegan/Vegetarian/Vegetarian Option Restaurants per Million People,Percentage of Population that is Obese,Heart Disease Deaths per Million People
 Alabama,AL,630,1,1,41,43,36,2196
 Alaska,AK,260,0,3,152,154,31,1297
 Arizona,AZ,460,6,5,87,97,31,1340
