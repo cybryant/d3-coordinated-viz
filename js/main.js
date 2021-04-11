@@ -8,8 +8,8 @@ var attrArray = ["Fast Food Restaurants per Million People", "Vegan Restaurants 
 var expressed = attrArray[0]; //initial attribute
 
 //chart frame dimensions
-var chartWidth = window.innerWidth * 0.425,
-    chartHeight = 473,
+var chartWidth = window.innerWidth * 0.45,
+    chartHeight = 490,
     leftPadding = 33,
     rightPadding = 2,
     topBottomPadding = 5,
@@ -20,7 +20,7 @@ var chartWidth = window.innerWidth * 0.425,
 //create a scale to size bars proportional to frame and for axis    
 var yScale = d3.scaleLinear()
     .range([463, 0]) //chart height minus 10   
-    .domain([0, 650]); //zero to maximum csv value (rounded)    
+    .domain([0, 650]); //zero to maximum csv value (rounded)  
     
 //execute script when window loads
 window.onload = setMap();
@@ -37,15 +37,15 @@ function setMap(){
         .append("svg") //put a new svg in the body
         .attr("width", width) //assign the width
         .attr("height", height) //assign the height
-        .attr("class", "container") //assigning a class (same as the block name) for styling and future selection
-        .style("background-color", "rgba(0,0,0,0.2)"); 
+        .attr("class", "container"); //assigning a class (same as the block name) for styling and future selection
+        //.style("border", "rgba(0,0,0,0.2)");
     
     //create Albers equal area conic projection centered on the US
 	var projection = d3.geoAlbersUsa()
         //.center([-6, 40 ])
         //.rotate([90.09, 0.00, 0])
         //.parallels([34.05, 32.37])
-        .scale(850)
+        .scale(1000)
         .translate([width / 2, height / 2]);
     
     var path = d3.geoPath()
@@ -230,13 +230,13 @@ function setChart(restCDCdata, colorScale){
         .attr("class", "chartFrame")
         .attr("width", chartInnerWidth)
         .attr("height", chartInnerHeight)
-        .attr("transform", translate);    
+        .attr("transform", translate);
     
     //create a text element for the dynamic chart title
     var chartTitle = chart.append("text")
         .attr("x", "50%")
         .attr("text-anchor", "middle")
-        .attr("y", 40)
+        .attr("y", 15)
         .attr("class", "chartTitle")
         .text(expressed);     
     
@@ -333,11 +333,11 @@ function updateChart(bars, n, colorScale){
     })
         //size/resize bars
         .attr("height", function(d, i) {
-            return 463 - yScale(parseFloat(d[expressed]));
+            return (chartHeight - 10) - yScale(parseFloat(d[expressed]));
         })
         .attr("y", function (d, i){
             return yScale(parseFloat(d[expressed])) + topBottomPadding;
-    })
+        })
         //color/recolor bars
         .style("fill", function(d){
             return choropleth(d, colorScale);
@@ -353,8 +353,8 @@ function updateChart(bars, n, colorScale){
 function highlight(props){
     //change stroke
     var selected = d3.selectAll("." + props.STUSPS)
-        .style("stroke", "blue")
-        .style("stroke-width", "2");
+        .style("stroke", "red")
+        .style("stroke-width", "3");
     
     setLabel(props);
 };
@@ -420,8 +420,8 @@ function moveLabel(event){
         y2 = event.clientY + 25;
     
     //horizontal label coordinate, testing for overflow
-    var y = event.clientY < 125 ? y2 : y1; //it appears "? y2 : y1" is shorthand for 'if/then'; if the statement before "?" is true then "y" value is y2, if the statement is false then "y" value is y1    
-    var x = event.clientX > window.innerWidth - labelWidth - 20 ? x2 : x1;
+    var y = event.clientY < 223 ? y2 : y1; //it appears "? y2 : y1" is shorthand for 'if/then'; if the statement before "?" is true then "y" value is y2, if the statement is false then "y" value is y1    
+    var x = event.clientX > window.innerWidth - labelWidth - 30 ? x2 : x1;
     
     d3.select(".infolabel")
         .style("left", x + "px")
