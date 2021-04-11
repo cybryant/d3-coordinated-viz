@@ -3,9 +3,6 @@
 //wrap everything into a self-executing anonymous function to move attribute variables to local scope
 (function(){
 
-//pseudo-global attribute variables; create list to hold attributes
-//var attrArray = ["fastFdPerMil", "veganPerMil", "vegetPerMil", "vegetOptPerMil", "totVegPerMil", "obesityPerc", "heartDisDthsPerMil"];
-
 var attrArray = ["Fast Food Restaurants per Million People", "Vegan Restaurants per Million People", "Vegetarian Restaurants per Million People", "Restaurants with Vegetarian Options per Million People", "Total Vegan/Vegetarian/Vegetarian Option Restaurants per Million People", "Percentage of Population that is Obese", "Heart Disease Deaths per Million People"];
 
 var expressed = attrArray[0]; //initial attribute
@@ -13,7 +10,7 @@ var expressed = attrArray[0]; //initial attribute
 //chart frame dimensions
 var chartWidth = window.innerWidth * 0.425,
     chartHeight = 473,
-    leftPadding = 25,
+    leftPadding = 33,
     rightPadding = 2,
     topBottomPadding = 5,
     chartInnerWidth = chartWidth - leftPadding - rightPadding,
@@ -72,7 +69,7 @@ function setMap(){
         //translate states TopoJson to GeoJson
         var usStates = topojson.feature(states, states.objects.states19).features;
         
-        console.log(usStates);
+        //console.log(usStates);
         
         //join csv data to GeoJSON enumeration units (states)
         usStates = joinData(usStates, restCDCdata);
@@ -133,28 +130,6 @@ function makeColorScale(data){
         "#980043"        
     ];
     
-/*    //create color scale generator - NATURAL
-    var colorScale = d3.scaleThreshold()
-        .range(colorClasses);
-    //build array of all values of the expressed attribute
-    var domainArray = [];
-    for (var i=0; i<data.length; i++){
-        var val = parseFloat(data[i][expressed]);
-        domainArray.push(val);
-    };
-    //cluster data using ckmeans clustering algorith to create natural breaks
-    var clusters = ss.ckmeans(domainArray, 5);
-    //reset domain array to cluster minimums
-    domainArray = clusters.map(function(d){
-        return d3.min(d);
-    });
-    //remove first value from domain array to create class breakpoints
-    domainArray.shift();
-    //assign array of last 4 cluster minimums as domain
-    colorScale.domain(domainArray);
-*/
- //***INVESTIGATE IF THIS IS THE BEST SCALE TO USE
-    
     //create color scale generator - QUANTILE
     var colorScale = d3.scaleQuantile()
         .range(colorClasses);
@@ -182,7 +157,7 @@ function choropleth(props, colorScale){
     };
 }; //end choropleth()
 
-//***NEED DIFFERENT/TOGGLE VIEW & SCALE WITH ALASKA & HAWAII
+    
 //add enumeration units (states) to the map
 function setEnumerationUnits(usStates, container, path, colorScale){
     var stateGeog = container.selectAll(".stateGeog")
@@ -250,30 +225,6 @@ function setChart(restCDCdata, colorScale){
     var desc = bars.append("desc")
         .text('{"stroke": "none", "stroke-width": "0px"}');
     
-    //annotate bars with attribute value text (state abbreviations)
-    //***UPDATE THIS TO ANGLE STATE ABBREVIATIONS
-    /*var abbr = chart.selectAll(".abbr")
-        .data(restCDCdata)
-        .enter()
-        .append("text")
-        .sort(function(a, b){
-            return b[expressed]-a[expressed]
-        })
-        .attr("class", function(d){
-            return "abbr " + d.STUSPS;
-        })
-        //***ADD OR AMEND ATTRIBUTE TO ANGLE TEXT
-        .attr("text-anchor", "middle");
-    //create vertical axis generator
-    var yAxis = d3.axisLeft()
-        .scale(yScale);
-    //place axis
-    var axis = chart.append("g")
-        .attr("class", "axis")
-        .attr("transform", translate)
-        .call(yAxis);
-    */
-    
     //create frame for chart border
     var chartFrame = chart.append("rect")
         .attr("class", "chartFrame")
@@ -283,18 +234,18 @@ function setChart(restCDCdata, colorScale){
     
     //create a text element for the dynamic chart title
     var chartTitle = chart.append("text")
-        .attr("x", 60)
+        .attr("x", "50%")
+        .attr("text-anchor", "middle")
         .attr("y", 40)
         .attr("class", "chartTitle")
         .text(expressed);     
     
     //set bar positions, heights, and colors
     updateChart(bars, restCDCdata.length, colorScale);
-
 }; //end setChart()
     
     
-//***MOVE TO CORRECT LOCATION ON THE MAP IN style.css    
+//***CAN MOVE LOCATION IN style.css    
 //create dropdown for attribute selection
 function createDropdown(restCDCdata){
     //add select element
@@ -469,7 +420,7 @@ function moveLabel(event){
         y2 = event.clientY + 25;
     
     //horizontal label coordinate, testing for overflow
-    var y = event.clientY < 75 ? y2 : y1; //it appears "? y2 : y1" is shorthand for 'if/then'; if the statement before "?" is true then "y" value is y2, if the statement is false then "y" value is y1    
+    var y = event.clientY < 135 ? y2 : y1; //it appears "? y2 : y1" is shorthand for 'if/then'; if the statement before "?" is true then "y" value is y2, if the statement is false then "y" value is y1    
     var x = event.clientX > window.innerWidth - labelWidth - 20 ? x2 : x1;
     
     d3.select(".infolabel")
@@ -479,9 +430,6 @@ function moveLabel(event){
     
 })(); //end anonymous wrapper function
 
-
-//***CHECK MISSISSIPPI DATA FOR FAST FOOD RESTAURANTS
-//***CHECK VEGAN VS VEGETARIAN DATA; OREGON SHOWING MORE VEGAN THAN VEGETARIAN
 
 
 
