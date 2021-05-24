@@ -236,7 +236,7 @@ function setChart(restCDCdata, colorScale){
     var chartTitle = chart.append("text")
         .attr("x", "50%")
         .attr("text-anchor", "middle")
-        .attr("y", 15)
+        .attr("y", 25)
         .attr("class", "chartTitle")
         .text(expressed);     
     
@@ -344,8 +344,7 @@ function updateChart(bars, n, colorScale){
     });
     
     var chartTitle = d3.select(".chartTitle")
-        .text(expressed);
-    
+        .text(expressed);   
 }; //end updateChart()
 
     
@@ -357,7 +356,7 @@ function highlight(props){
         .style("stroke-width", "3");
     
     setLabel(props);
-};
+}; //end highlight()
     
     
 //reset the element style on mouseout
